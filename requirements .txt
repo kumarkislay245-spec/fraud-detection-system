@@ -1,4 +1,4 @@
 streamlit
 pandas
-xgboost
+xgboost as xgb
 plotly

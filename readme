@@ -1,0 +1,28 @@
+# 🏦 Enterprise Fraud Intelligence & Risk Engine
+
+**Project Overview:** A high-performance machine learning application designed to detect fraudulent financial transactions within a massive dataset of **6.3 Million records**. This system leverages **XGBoost** to identify complex anomalies and balance discrepancies that traditional rule-based systems often miss.
+
+---
+
+### 🚀 Key Features
+* **Real-Time Risk Scoring:** Instantly evaluates transactions and provides a probability score.
+* **Automated Feature Engineering:** Calculates `errorBalance` for both origin and destination accounts to expose hidden discrepancies.
+* **Integrated Business Logic:** Built-in safeguards to reject transactions with insufficient funds automatically.
+* **Interactive Dashboard:** A clean, split-screen UI built with **Streamlit** and **Plotly** for high-impact data visualization.
+
+---
+
+### 🛠️ Technical Stack
+* **Language:** Python 3.x
+* **Model:** XGBoost (Optimized for imbalanced classification)
+* **Dashboard:** Streamlit
+* **Data Handling:** Pandas, NumPy
+* **Visualization:** Plotly
+
+---
+
+### 📊 The Data Challenge (Imbalanced Classification)
+The dataset contained over 6.3M transactions, with only **8,200** cases of fraud (~0.13%).
+* **The Strategy:** Implemented `scale_pos_weight` and adjusted decision thresholds to ensure the model prioritizes **Recall** (catching fraud) over simple accuracy.
+* **The Result:** A scalable engine that provides actionable risk insights rather than just binary flags.
+

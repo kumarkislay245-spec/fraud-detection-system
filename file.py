@@ -1,117 +1,136 @@
 import streamlit as st
 import pandas as pd
-import xgboost as xgb
+import joblib
 import os
 import plotly.graph_objects as go
 
-# --- 1. PREMIUM PAGE CONFIG ---
+# --- PAGE CONFIG ---
 st.set_page_config(
     page_title="Fraud Intelligence Engine",
     page_icon="🏦",
     layout="wide"
 )
 
-
-# --- 2. MODEL LOADING ---
+# --- MODEL & THRESHOLD LOADING ---
 @st.cache_resource
-def load_xgboost_model():
-    model_path = 'model.json'
-    if os.path.exists(model_path):
-        model = xgb.XGBClassifier()
-        model.load_model(model_path)
-        return model
-    return None
+def load_model():
+    model_path = 'fraud_model.pkl'
+    threshold_path = 'threshold.pkl'
 
+    if not os.path.exists(model_path):
+        return None, 0.8
 
-model = load_xgboost_model()
+    model = joblib.load(model_path)
+    threshold = joblib.load(threshold_path) if os.path.exists(threshold_path) else 0.8
+    return model, threshold
 
-# --- 3. HEADER SECTION ---
+model, threshold = load_model()
+
+# --- HEADER ---
 st.title("🏦 Fraud Intelligence & Risk Engine")
 st.markdown("Real-time transaction monitoring with automated balance validation.")
 st.divider()
 
-# --- 4. SPLIT-SCREEN LAYOUT ---
+# --- LAYOUT ---
 col_input, col_result = st.columns([1, 1.2], gap="large")
 
 with col_input:
     with st.form("transaction_form", border=True):
-        st.subheader("📥 Transaction Telemetry")
+        st.subheader("📥 Transaction Details")
 
         amount = st.number_input("Transaction Amount (₹)", min_value=0.0, value=1000.0, step=500.0)
 
         st.markdown("**Sender Details**")
         col_s1, col_s2 = st.columns(2)
         with col_s1:
-            oldbalanceOrg = st.number_input("Initial Balance", min_value=0.0, value=5000.0, step=500.0)
+            oldbalanceOrg = st.number_input("Balance Before", min_value=0.0, value=50000.0, step=500.0)
         with col_s2:
-            newbalanceOrig = st.number_input("Final Balance", min_value=0.0, value=4000.0, step=500.0)
+            newbalanceOrig = st.number_input("Balance After", min_value=0.0, value=49000.0, step=500.0)
 
         st.markdown("**Receiver Details**")
         col_r1, col_r2 = st.columns(2)
         with col_r1:
-            oldbalanceDest = st.number_input("Initial Balance", min_value=0.0, value=0.0, step=500.0)
+            oldbalanceDest = st.number_input("Balance Before", min_value=0.0, value=4000.0, step=500.0)
         with col_r2:
-            newbalanceDest = st.number_input("Final Balance", min_value=0.0, value=1000.0, step=500.0)
+            newbalanceDest = st.number_input("Balance After", min_value=0.0, value=5000.0, step=500.0)
 
-        submitted = st.form_submit_button("🔍 Analyze Risk Profile", type="primary", use_container_width=True)
+        submitted = st.form_submit_button("🔍 Analyze Transaction", type="primary", use_container_width=True)
 
 with col_result:
     if not submitted:
-        st.info("👈 Enter transaction details and click 'Analyze Risk Profile' to generate a report.")
+        st.info("👈 Enter transaction details and click Analyze to get results.")
+
     else:
-        # --- BUSINESS LOGIC CHECK: Insufficient Funds ---
+        # --- CHECK 1: Insufficient Funds ---
         if amount > oldbalanceOrg:
             st.error("### ❌ TRANSACTION REJECTED: INSUFFICIENT FUNDS")
-            st.warning(f"The sender only has **₹{oldbalanceOrg:,.2f}**, but is attempting to send **₹{amount:,.2f}**.")
+            st.warning(f"Sender has **₹{oldbalanceOrg:,.2f}** but trying to send **₹{amount:,.2f}**.")
 
-            # Visual check for the user
             fig = go.Figure(data=[
-                go.Bar(name='Available', x=['Balance Status'], y=[oldbalanceOrg], marker_color='green'),
-                go.Bar(name='Requested', x=['Balance Status'], y=[amount], marker_color='red')
+                go.Bar(name='Available Balance', x=['Balance'], y=[oldbalanceOrg], marker_color='green'),
+                go.Bar(name='Transaction Amount', x=['Balance'], y=[amount], marker_color='red')
             ])
-            fig.update_layout(barmode='group', height=300, title="Fund Availability Comparison")
+            fig.update_layout(barmode='group', height=300, title="Fund Availability")
             st.plotly_chart(fig, use_container_width=True)
 
+        # --- CHECK 2: Model not found ---
         elif model is None:
-            st.error("System Error: 'model.json' offline.")
+            st.error("❌ fraud_model.pkl not found. Please add model file.")
+
         else:
-            with st.spinner("Analyzing transaction patterns..."):
-                # Feature Engineering
-                errorBalanceOrg = newbalanceOrig + amount - oldbalanceOrg
-                errorBalanceOrig = oldbalanceDest + amount - newbalanceDest
+            with st.spinner("Analyzing transaction..."):
+
+                # --- FIXED FEATURE ENGINEERING ---
+                errorBalanceOrg  = (oldbalanceOrg  + amount) - newbalanceOrig   # sender error
+                errorBalanceDest = (oldbalanceDest + amount) - newbalanceDest   # receiver error
 
                 input_data = pd.DataFrame([{
-                    'amount': amount,
-                    'errorBalanceOrg': errorBalanceOrg,
-                    'errorBalanceOrig': errorBalanceOrig
+                    'amount':           amount,
+                    'errorBalanceOrg':  errorBalanceOrg,
+                    'errorBalanceDest': errorBalanceDest
                 }])
 
-                # AI Prediction
+                # --- PREDICTION WITH THRESHOLD ---
                 prob = float(model.predict_proba(input_data)[0][1])
+                is_fraud = prob >= threshold
 
-                st.subheader("📊 AI Risk Assessment Report")
+                st.subheader("📊 Risk Assessment Report")
+                st.markdown(f"**Fraud Probability: {prob * 100:.2f}%** &nbsp;|&nbsp; Threshold: {threshold}")
 
-                # Dynamic Progress Bar
-                st.markdown(f"**Fraud Probability Score: {prob * 100:.2f}%**")
-                if prob > 0.10:
-                    st.progress(prob, text="Critical Risk Level")
-                    st.error("### 🚨 ACTION: TRANSACTION BLOCKED")
-                    st.markdown("AI Model matched this transaction with known fraud signatures.")
+                # Result
+                if is_fraud:
+                    st.progress(prob, text="High Risk")
+                    st.error("### 🚨 TRANSACTION BLOCKED")
+                    st.markdown("This transaction matches known fraud patterns.")
                 else:
-                    st.progress(prob, text="Safe Margin")
-                    st.success("### ✅ ACTION: TRANSACTION APPROVED")
+                    st.progress(prob, text="Low Risk")
+                    st.success("### ✅ TRANSACTION APPROVED")
+                    st.markdown("No fraud patterns detected.")
 
-                # Comparison Chart for Balances
+                # Error Balance Chart
                 fig = go.Figure()
-                fig.add_trace(go.Bar(x=['Sender', 'Receiver'], y=[abs(errorBalanceOrg), abs(errorBalanceOrig)],
-                                     marker_color=['#FF4B4B', '#00CC96']))
-                fig.update_layout(title="Detected Discrepancy (Error Balance)", height=300)
+                fig.add_trace(go.Bar(
+                    x=['Sender Error', 'Receiver Error'],
+                    y=[abs(errorBalanceOrg), abs(errorBalanceDest)],
+                    marker_color=['#FF4B4B', '#00CC96'],
+                    text=[f'₹{abs(errorBalanceOrg):,.2f}', f'₹{abs(errorBalanceDest):,.2f}'],
+                    textposition='auto'
+                ))
+                fig.update_layout(title="Balance Discrepancy Analysis", height=300)
                 st.plotly_chart(fig, use_container_width=True)
 
-                with st.expander("⚙️ View Technical Metrics"):
-                    st.write(f"Sender Error: ₹{errorBalanceOrg}")
-                    st.write(f"Receiver Error: ₹{errorBalanceOrig}")
-                    st.dataframe(input_data)
+                # Technical Details
+                with st.expander("⚙️ Technical Metrics"):
+                    col1, col2, col3 = st.columns(3)
+                    col1.metric("Fraud Probability", f"{prob:.2%}")
+                    col2.metric("Threshold Used", f"{threshold}")
+                    col3.metric("Decision", "FRAUD" if is_fraud else "LEGIT")
+
+                    st.markdown("**Feature Values Sent to Model:**")
+                    st.dataframe(input_data, use_container_width=True)
 
 # --- FOOTER ---
-st.markdown("<br><p style='text-align: center; color: gray;'>Kislay Kumar | NIT Warangal</p>", unsafe_allow_html=True)
+st.markdown(
+    "<br><p style='text-align:center; color:gray;'>Kislay Kumar | NIT Warangal</p>",
+    unsafe_allow_html=True
+)

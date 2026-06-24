@@ -12,18 +12,24 @@ st.set_page_config(
 )
 
 # --- MODEL & THRESHOLD LOADING ---
+import os
+
+# Yeh add karo file ke bilkul upar
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
 @st.cache_resource
 def load_model():
-    model_path = 'fraud_model.pkl'
-    threshold_path = 'threshold.pkl'
+    model_path     = os.path.join(BASE_DIR, 'fraud_model.pkl')
+    threshold_path = os.path.join(BASE_DIR, 'threshold.pkl')
 
     if not os.path.exists(model_path):
-        return None, 0.8
+        st.error(f"Model not found at: {model_path}")  # debug ke liye
+        return None, 0.7
 
-    model = joblib.load(model_path)
-    threshold = joblib.load(threshold_path) if os.path.exists(threshold_path) else 0.8
+    model     = joblib.load(model_path)
+    threshold = joblib.load(threshold_path) if os.path.exists(threshold_path) else 0.7
     return model, threshold
-
+    
 model, threshold = load_model()
 
 # --- HEADER ---

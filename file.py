@@ -117,9 +117,9 @@ with col_result:
                 fig = go.Figure()
                 fig.add_trace(go.Bar(
                     x=['Sender Error', 'Receiver Error'],
-                    y=[abs(errorBalanceOrg), abs(errorBalanceDest)],
+                    y=[abs(errorBalanceOrg), abs(errorBalanceOrig)],
                     marker_color=['#FF4B4B', '#00CC96'],
-                    text=[f'₹{abs(errorBalanceOrg):,.2f}', f'₹{abs(errorBalanceDest):,.2f}'],
+                    text=[f'₹{abs(errorBalanceOrg):,.2f}', f'₹{abs(errorBalanceOrig):,.2f}'],
                     textposition='auto'
                 ))
                 fig.update_layout(title="Balance Discrepancy Analysis", height=300)

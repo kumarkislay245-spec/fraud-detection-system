@@ -93,7 +93,7 @@ with col_result:
                 input_data = pd.DataFrame([{
                     'amount':           amount,
                     'errorBalanceOrg':  errorBalanceOrg,
-                    'errorBalanceOrig': errorBalanceDest
+                    'errorBalanceOrig': errorBalanceOrig
                 }])
 
                 # --- PREDICTION WITH THRESHOLD ---

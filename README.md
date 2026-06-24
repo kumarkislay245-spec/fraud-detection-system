@@ -123,7 +123,7 @@ pip install -r requirements.txt
 
 ### 3. Launch the app
 ```bash
-streamlit run file.py
+https://fraud-detection-system-tvmo2rt687twsxnf2lnm4m.streamlit.app/
 ```
 
 ### 4. Open in browser

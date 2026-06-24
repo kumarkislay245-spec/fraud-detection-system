@@ -88,7 +88,7 @@ with col_result:
 
                 # --- FIXED FEATURE ENGINEERING ---
                 errorBalanceOrg  = (oldbalanceOrg  + amount) - newbalanceOrig   # sender error
-                errorBalanceDest = (oldbalanceDest + amount) - newbalanceDest   # receiver error
+                errorBalanceOrig = (oldbalanceDest + amount) - newbalanceDest   # receiver error
 
                 input_data = pd.DataFrame([{
                     'amount':           amount,

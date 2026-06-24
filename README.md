@@ -125,12 +125,6 @@ pip install -r requirements.txt
 ```bash
 https://fraud-detection-system-tvmo2rt687twsxnf2lnm4m.streamlit.app/
 ```
-
-### 4. Open in browser
-```
-http://localhost:8501
-```
-
 ---
 
 ## 📦 Dependencies

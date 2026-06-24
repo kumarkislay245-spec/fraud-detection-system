@@ -19,8 +19,8 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 @st.cache_resource
 def load_model():
-    model_path     = os.path.join(BASE_DIR, 'fraud_model(1).pkl')
-    threshold_path = os.path.join(BASE_DIR, 'threshold(1).pkl')
+    model_path     = os.path.join(BASE_DIR, 'fraud_model.pkl')
+    threshold_path = os.path.join(BASE_DIR, 'threshold.pkl')
 
     if not os.path.exists(model_path):
         st.error(f"Model not found at: {model_path}")  # debug ke liye

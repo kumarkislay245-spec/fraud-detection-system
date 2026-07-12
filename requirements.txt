@@ -2,6 +2,6 @@ streamlit
 xgboost
 pandas
 scikit-learn
-numpy
+numpy<2.0
 plotly
-tensorflow-cpu
+tensorflow==2.15.0

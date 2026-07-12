@@ -12,6 +12,7 @@
 ![Pandas](https://img.shields.io/badge/Pandas-150458?style=for-the-badge&logo=pandas&logoColor=white)
 
 [![GitHub Repo](https://img.shields.io/badge/View%20Repository-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/kumarkislay245-spec/fraud-detection-system)
+[![Live App](https://img.shields.io/badge/Live%20Demo-FF4B4B?style=for-the-badge&logo=streamlit&logoColor=white)](https://fraud-detection-system-tvmo2rt687twsxnf2lnm4m.streamlit.app/)
 [![Author](https://img.shields.io/badge/Author-Kislay%20Kumar-50c88c?style=for-the-badge)](https://github.com/kumarkislay245-spec)
 
 </div>
@@ -112,6 +113,12 @@ fraud-detection-system/
 ├── .gitignore
 └── README.md
 ```
+
+---
+
+## 🌐 Live Demo
+
+**[Try the app here →](https://fraud-detection-system-tvmo2rt687twsxnf2lnm4m.streamlit.app/)**
 
 ---
 

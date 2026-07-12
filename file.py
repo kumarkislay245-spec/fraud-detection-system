@@ -1,8 +1,15 @@
+import os
+
+# MUST be set before tensorflow is imported — forces TF to skip GPU/CUDA probing.
+# On Streamlit Cloud's sandboxed containers, TF's CUDA init can segfault instead
+# of failing gracefully, which is what was crashing the app.
+os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
+
 import streamlit as st
 import pandas as pd
 import numpy as np
 import joblib
-import os
 import plotly.graph_objects as go
 import tensorflow as tf
 

@@ -19,7 +19,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 @st.cache_resource
 def load_model():
-    model_path     = os.path.join(BASE_DIR, 'fraud_model.pkl')
+    model_path     = os.path.join(BASE_DIR, 'ann_smote_model')
     threshold_path = os.path.join(BASE_DIR, 'threshold.pkl')
 
     if not os.path.exists(model_path):

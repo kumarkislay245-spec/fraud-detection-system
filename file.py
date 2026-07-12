@@ -85,8 +85,12 @@ def predict_fraud(model, scaler, input_data: pd.DataFrame):
     so model.predict() directly returns the fraud probability
     (there's no predict_proba like sklearn/RandomForest).
     """
-    scaled_input = scaler.transform(input_data)
-    prob = float(model.predict(scaled_input, verbose=0)[0][0])
+    scaled_input = scaler.transform(input_data).astype("float32")
+    # Using model(...) directly instead of model.predict() — predict() runs
+    # through TF's batching/threading pipeline which is NOT thread-safe and
+    # segfaults when called from Streamlit's non-main session thread. A direct
+    # call uses TF's lightweight, thread-safe execution path.
+    prob = float(model(scaled_input, training=False).numpy()[0][0])
     is_fraud = prob >= FRAUD_THRESHOLD
     return prob, is_fraud
 
